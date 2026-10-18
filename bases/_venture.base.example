@@ -1,0 +1,24 @@
+# Copy to bases/<VENTURE>.base and replace <venture-slug> with the venture's filename.
+filters: domain == "<venture-slug>"
+views:
+  - type: table
+    name: Everything in this venture
+    groupBy:
+      property: type
+      direction: ASC
+    order:
+      - file.name
+      - type
+      - status
+      - confidence
+      - file.mtime
+    sort:
+      - property: file.mtime
+        direction: DESC
+  - type: table
+    name: Open questions
+    filters: type == "question" and status != "closed"
+    order:
+      - file.name
+      - owner
+      - file.mtime

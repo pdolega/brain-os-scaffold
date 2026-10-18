@@ -1,0 +1,22 @@
+filters: type == "product-idea"
+views:
+  - type: table
+    name: Ideas
+    order:
+      - file.name
+      - status
+      - score
+      - domain
+      - parent
+      - next_test
+      - file.mtime
+    sort:
+      - property: score
+        direction: DESC
+  - type: cards
+    name: In validation
+    filters: status == "validating"
+    order:
+      - file.name
+      - score
+      - next_test

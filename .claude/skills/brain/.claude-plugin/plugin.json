@@ -1,0 +1,6 @@
+{
+  "name": "brain",
+  "description": "Brain vault operations: sync, triage, radar, mail, promote, retire, ingest, review, weekly, lint, draft, file, agenda",
+  "version": "0.1.0",
+  "author": { "name": "brain-os-scaffold" }
+}

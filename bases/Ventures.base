@@ -1,0 +1,16 @@
+filters:
+  or:
+    - type == "venture"
+    - type == "initiative"
+views:
+  - type: table
+    name: Dossiers
+    order:
+      - file.name
+      - type
+      - status
+      - confidence
+      - file.mtime
+    sort:
+      - property: type
+        direction: DESC

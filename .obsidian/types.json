@@ -1,0 +1,15 @@
+{
+  "types": {
+    "aliases": "aliases",
+    "cssclasses": "multitext",
+    "tags": "tags",
+    "due": "date",
+    "created": "date",
+    "updated": "date",
+    "captured": "date",
+    "published": "date",
+    "when": "date",
+    "first_seen": "date",
+    "last_seen": "date"
+  }
+}

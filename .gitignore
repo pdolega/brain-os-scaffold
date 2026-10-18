@@ -1,0 +1,29 @@
+# Obsidian local state (per-machine UI state, rewritten on every open)
+.obsidian/cache
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.trash/
+
+# Binaries. Source of truth is ~/brain-blobs/{plaud,attachments}/ — see AGENTS.md §2.
+# Belt and braces: even if one lands in the vault, keep it out of git.
+*.m4a
+*.mp3
+*.wav
+*.mp4
+*.pdf
+*.epub
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.docx
+*.pptx
+*.xlsx
+
+# OS noise
+.DS_Store
+
+# Python bytecode from tools/
+__pycache__/
+*.pyc

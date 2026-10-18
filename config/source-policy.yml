@@ -1,0 +1,207 @@
+# Read by the agent at /brain:sync, /brain:triage, /brain:promote and /brain:ingest to decide destination,
+# mutability, sensitivity, and extraction depth. Never written by the agent except
+# on explicit human authorization (hard rules 10–11).
+# Strict parse — a typo must fail the run loudly rather than be interpreted.
+#
+# Discovery source: every explicitly saved Readwise Reader document → firehose.
+# Evidence sources: Plaud, promoted Readwise/web/video items, manual notes, and
+# manual attachment sidecars.
+# Activity sources (Substack, X via Typefully, LinkedIn via AuthoredUp) are fetched on
+# every sync, store-only; /brain:weekly alone matches and closes loops. Add other sources
+# only after an available transport and human-approved data flow exist.
+# Email (Superhuman Mail MCP) is pulled only for threads labeled `brain`; the scan
+# that proposes labels is /brain:mail (AGENTS.md 5.0e).
+
+version: 5
+
+defaults:
+  sensitivity: restricted      # open | restricted (AGENTS.md §3)
+  extraction_depth: standard   # light | standard | deep
+  overlap_days: 2              # re-fetch this many days before the watermark
+  start_from: TODO             # TODO: YYYY-MM-DD, the day you start. /brain:sync stops
+                               # and asks while this is TODO. Connector history begins
+                               # here (email is the exception: a thread you label `brain`
+                               # is pulled whatever its date). Earlier posts are the
+                               # untracked baseline, not "unmatched publications".
+
+# sensitivity is a STARTING GUESS ONLY. Sync copies it onto the source page; ingest
+# sets the final value after reading (AGENTS.md 5.1 step 5). Two values: `restricted`
+# = client content or the human's private matters — quotable/citable outward only
+# anonymized, human is the gate (rule 5); `open` = team-internal work and reading.
+# Calls default restricted, reading open.
+
+sources:
+
+  plaud:
+    enabled: false                    # TODO: true once the Plaud MCP server is added (README step 6)
+    transport: mcp
+    mcp_server: plaud                 # MCP server name as configured in Claude Code
+    dest: raw/{yyyy}/{mm}/{dd}/plaud
+    fetch: everything                 # every recording; relevance decided at ingest
+    content: transcript               # transcript ONLY. Never Plaud AI summary/notes/highlights —
+                                      # summarizing is done in the vault, with provenance.
+    watermark_key: captured           # item start time, stored as `captured`; plus source_id set for dedupe
+    late_upload_days: 14              # list recordings captured in the last N days regardless of watermark
+    extraction_depth: deep
+    domain: none                      # ingest fallback only; sync writes unclassified
+    sensitivity: restricted
+    skip_shorter_than_seconds: 0      # pull everything; note trivial ones at ingest
+
+  readwise:
+    enabled: false                    # TODO: true once the Readwise MCP server is added (README step 6)
+    transport: mcp
+    mcp_server: readwise
+    dest: firehose/{yyyy}/{mm}/{dd}/readwise
+    promotion_dest: raw/{yyyy}/{mm}/{dd}/readwise
+    fetch: all_saved_documents        # no tag gate; every explicitly saved Reader document
+    scope: reader                     # excludes the Classic Readwise highlight corpus
+    exclude_automatic_feed_items: true # RSS/feed delivery is not a save unless the human bookmarks it
+    include_highlights: true
+    include_document_text: true       # when the API returns it
+    watermark_key: updated_at         # tags can be added late; updated_at catches that
+    mutable_until: promoted           # refresh firehose body/highlights; never rewrite raw
+    extraction_depth: standard
+    domain: research
+    sensitivity: open
+
+  youtube:
+    enabled: true
+    transport: web
+    dest: firehose/{yyyy}/{mm}/{dd}/youtube
+    promotion_dest: raw/{yyyy}/{mm}/{dd}/youtube
+    fetch: on_request
+    content: available_captions_or_notes # never download captionless audio for transcription
+    extraction_depth: standard
+    domain: research
+    sensitivity: open
+
+  web:
+    enabled: true
+    transport: web
+    dest: firehose/{yyyy}/{mm}/{dd}/web
+    promotion_dest: raw/{yyyy}/{mm}/{dd}/web
+    fetch: on_request
+    content: accessible_page_text
+    extraction_depth: standard
+    domain: research
+    sensitivity: open
+
+  notes:
+    enabled: true
+    transport: manual                 # human drops text files (incl. chapter-split books); sync only adds frontmatter
+    dest: raw/{yyyy}/{mm}/{dd}/notes
+    extraction_depth: standard
+    domain: none                      # ingest fallback only
+    sensitivity: restricted
+
+  # --- activity sources: every sync stores (AGENTS.md 5.0), /brain:weekly closes loops (5.5)
+
+  substack:
+    enabled: false                    # TODO: enable once url is set
+    transport: web
+    url: https://TODO.substack.com/feed     # TODO: your publication's RSS feed
+    dest: raw/{yyyy}/{mm}/{dd}/activity
+    cadence: daily
+    watermark_key: published_at
+    extraction_depth: light           # publication fact only; claims are cited elsewhere
+    domain: audience
+    sensitivity: open
+
+  typefully:
+    enabled: false                    # TODO: enable once social_set_id is set
+    transport: mcp
+    mcp_server: typefully
+    social_set_id: TODO               # from Typefully list_social_sets
+    platforms: [x]                    # Typefully analytics support X only; LinkedIn comes from AuthoredUp
+    dest: raw/{yyyy}/{mm}/{dd}/activity
+    cadence: daily
+    watermark_key: published_at
+    refresh_analytics_days: 28        # keep appending analytics rows for this long
+    extraction_depth: light
+    domain: audience
+    sensitivity: open
+
+  linkedin:
+    enabled: false                    # TODO: enable once actor is set
+    transport: mcp
+    mcp_server: authoredup-server
+    actor: TODO                       # from AuthoredUp GetActors; personal profile only, company pages excluded
+    include: [published]              # never scheduled / hidden / deleted
+    content: markdown_content         # verbatim post text; reshares kept, format: reshare
+    dest: raw/{yyyy}/{mm}/{dd}/activity
+    cadence: daily
+    watermark_key: published_at
+    refresh_analytics_days: 28
+    extraction_depth: light
+    domain: audience
+    sensitivity: open
+
+  # --- voice reference ----------------------------------------------------------
+
+  my-writing:
+    enabled: true
+    transport: manual
+    dest: raw/reading/my-writing      # undated, reference only
+    extraction_depth: light
+    domain: audience
+    sensitivity: open
+    role: voice-reference             # never cited as factual evidence
+
+  attachments:
+    enabled: true
+    transport: manual                 # human drops binaries into blob_dir; sync writes sidecars
+    blob_dir: ~/brain-blobs/attachments/{yyyy}/{mm}/{dd}   # outside the vault, never in git
+    dest: raw/{yyyy}/{mm}/{dd}/attachments   # one .md sidecar per file, extracted text
+    watermark_key: folder_date        # scan only blob_dir folders dated ≥ last sync date − overlap_days;
+                                      # older folders are never rescanned — the human announces a
+                                      # backfill and it is pulled with --since
+    extraction_depth: standard
+    domain: none                      # ingest fallback only
+    sensitivity: restricted
+
+  # --- email: the inbox is the firehose (AGENTS.md 5.0e); only labeled threads reach raw
+
+  email:
+    enabled: false                    # TODO: enable once accounts are set
+    transport: mcp
+    mcp_server: superhuman-server     # one session, any number of linked accounts
+    accounts:                         # alias → address; every call passes acting_email
+      work: you@work.example          # TODO
+      personal: you@personal.example  # TODO
+    label: brain                      # promotion marker; set by the human, or by the agent after per-thread approval
+    fetch: labeled                    # sync pulls every thread carrying the label, nothing else, all dates
+    unit: thread                      # one immutable snapshot per thread; growth → continuation page
+    scan_window_days: 7               # /brain:mail first-run window; later runs use the per-account email-scan watermark
+    scan_max_proposals: 10
+    skip_automated: true              # Gmail CATEGORY_PROMOTIONS/UPDATES/SOCIAL/FORUMS, no-reply senders, invitations are never proposed
+    tools_allowed: [list_accounts, list_threads, get_thread, get_message, update_thread]  # never send, draft, trash, unsubscribe, settings
+    attachments: names_only           # binaries are not fetched in v1
+    dest: raw/{yyyy}/{mm}/{dd}/email  # filed by the newest message in the snapshot
+    watermark_key: captured
+    extraction_depth: standard
+    domain: none                      # ingest fallback only; sync writes unclassified
+    sensitivity: restricted
+
+firehose:
+  storage: git                        # full Markdown items sync with the repository
+  obsidian_excluded: true             # discovery filter; not a no-index performance guarantee
+  promotion_requires_human: true
+  retire_mode: mark_only              # never delete content without a separate human-approved policy
+  migrate_at_files: 15000
+  migrate_at_bytes: 1073741824        # 1 GiB
+  migrate_at_slowdown_seconds: 2
+  default_streams: []                 # sync never guesses; /brain:triage assigns streams
+  active_streams: [technology]       # one entry per page in firehose/streams/; edit the example
+
+# Force the sensitivity GUESS to `restricted` when any of these match, at sync time,
+# from path or metadata only. Ingest may still change it after reading the content.
+escalate_sensitivity:
+  restricted:
+    - path_contains: /Clients/
+    - path_contains: /Private/
+    - path_contains: /Finances/
+
+# Hard exclusions. Never captured into firehose or raw, and never ingested.
+never_ingest:
+  - subject_matches: "(?i)payroll|salary|compensation|termination"
+  - path_contains: /Legal/

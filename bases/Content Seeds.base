@@ -1,0 +1,27 @@
+filters:
+  and:
+    - type == "content-seed"
+    - status != "published"
+    - status != "archived"
+views:
+  - type: table
+    name: Seeds
+    order:
+      - file.name
+      - status
+      - audience
+      - channel
+      - confidence
+      - file.mtime
+    sort:
+      - property: confidence
+        direction: DESC
+      - property: file.mtime
+        direction: DESC
+  - type: table
+    name: Ready to draft
+    filters: status == "approved"
+    order:
+      - file.name
+      - channel
+      - audience

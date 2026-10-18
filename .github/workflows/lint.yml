@@ -1,0 +1,13 @@
+name: vault-lint
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run deterministic vault lint (AGENTS.md §5.3 step 0)
+        run: python3 tools/lint.py --errors-only

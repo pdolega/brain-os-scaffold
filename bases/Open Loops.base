@@ -1,0 +1,17 @@
+filters:
+  and:
+    - type == "question"
+    - status != "closed"
+views:
+  - type: table
+    name: Open loops
+    order:
+      - file.name
+      - status
+      - owner
+      - due
+      - parent
+      - file.mtime
+    sort:
+      - property: due
+        direction: ASC

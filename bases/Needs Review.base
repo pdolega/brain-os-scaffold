@@ -1,0 +1,15 @@
+filters: needs_review == true
+views:
+  - type: table
+    name: Needs review
+    groupBy:
+      property: type
+      direction: ASC
+    order:
+      - file.name
+      - type
+      - file.mtime
+      - source_ids
+    sort:
+      - property: file.mtime
+        direction: DESC

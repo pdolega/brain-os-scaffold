@@ -1,0 +1,27 @@
+filters: domain == "audience" or parent == "[[writing]]"
+views:
+  - type: table
+    name: Everything WRITING
+    groupBy:
+      property: type
+      direction: ASC
+    order:
+      - file.name
+      - type
+      - status
+      - audience
+      - channel
+      - file.mtime
+    sort:
+      - property: file.mtime
+        direction: DESC
+  - type: table
+    name: Active projects
+    filters: type == "project" and status == "active"
+    order:
+      - file.name
+      - due
+      - status
+    sort:
+      - property: due
+        direction: ASC
