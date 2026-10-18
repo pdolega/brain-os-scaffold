@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="https://assets.maracuja.one/img/logo-brain.gif" alt="Brain OS" width="800">
-</p>
+![Brain OS](https://assets.maracuja.one/img/logo-brain.gif)
 
 # Brain OS scaffold
 
