@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://assets.maracuja.one/img/logo-brain.gif" alt="Brain OS" width="800">
+</p>
+
 # Brain OS scaffold
 
 A personal knowledge base that an AI agent maintains for you: a working seed to
