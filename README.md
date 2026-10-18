@@ -5,34 +5,20 @@ grow your own from.
 
 ## Introduction
 
-If you run several things at once (a job, a side venture, writing, advisory work),
-the inputs pile up quickly: calls, articles you saved, email threads, your own
-posts. It gets hard to tell whether you are reacting to the right things, whether
-two sources contradict each other, and whether the week moved you toward your goals.
+If you run several things at once (a company, a job, a side venture, writing, advisory work), the inputs pile up quickly: calls, articles you saved, email threads, your own posts. It gets hard to tell whether you are reacting to the right things, whether two sources contradict each other, and whether the week moved you toward your goals.
 
 Brain OS gives that work to an agent, under rules you control:
 
-- **You feed it what you already capture.** Call transcripts, saved articles, notes,
-  PDFs, email threads you choose, your published posts.
-- **The agent compiles it.** Each source becomes entries in a Daily Log and updates
-  to a cross-linked wiki of people, companies, projects, ideas and claims, every line
-  citing its source.
-- **You get one screen a day and one page a week.** The Daily Review ends with
-  exactly three decisions for you. The weekly rollup scores progress against your own
-  goals and lists what you said you would do and didn't.
-- **Disagreement is surfaced, not smoothed over.** When a new source contradicts an
-  old one, both are kept and the conflict lands in front of you.
+- **You feed it what you already capture.** Call transcripts, saved articles, notes, PDFs, email threads you choose, your published posts.
+- **The agent compiles it.** Each source becomes entries in a Daily Log and updates to a cross-linked wiki of people, companies, projects, ideas and claims, every line citing its source.
+- **You get one screen a day and one page a week.** The Daily Review ends with exactly three decisions for you. The weekly rollup scores progress against your own goals and lists what you said you would do and didn't.
+- **Disagreement is surfaced.** When a new source contradicts an old one, both are kept and the conflict lands in front of you.
 
-It is plain Markdown in a git repo. [Claude Code](https://claude.com/claude-code)
-is the interface; [Obsidian](https://obsidian.md) is an optional viewer. No
-database, no server, no app. The pattern is the "LLM wiki": immutable sources, a
-wiki the agent writes, and a contract file the agent obeys.
+It is plain Markdown in a git repo. [Claude Code](https://claude.com/claude-code) is the interface; [Obsidian](https://obsidian.md) is an optional viewer ([GrokBot](https://x.ai/bot) is another surface I am experimenting with, but no definitive conclusion here yet). Still, no database, no server, no app. The pattern is the "LLM wiki": immutable sources, a wiki the agent writes, and a contract file the agent (mostly) obeys.
 
-### A seed, not a template
+### A seed vs a template
 
-This is not a skeleton to fill in, and not a ready-made template for your brain.
-It is one working setup, stripped of its data, offered as a starting point and an
-inspiration. Take it and grow it toward what you need.
+This is not a skeleton to fill in, and not a ready-made template for your *AI brain*. It is one working setup, stripped of its data, offered as a starting point and an inspiration. Take it and grow it toward what you need.
 
 Expect to change most of it:
 
@@ -129,13 +115,13 @@ The short version:
    `context/voice.md` if you publish.
 4. Create a dossier page for each goal.
 5. Connect the inputs you use (MCP servers), or start with plain notes.
-6. Run `/brain:sync` → `/brain:ingest pending` → `/brain:review`.
+6. Run `/brain:sync` → `/brain:ingest` → `/brain:review`.
 
 The detail for each step follows.
 
 ### 1. Prerequisites
 
-- [Claude Code](https://docs.claude.com/en/docs/claude-code) installed and signed in.
+- [Claude Code](https://docs.claude.com/en/docs/claude-code) installed and signed in (but it is easy to make it work with Codex, [Grok Build](https://x.ai/build) or pretty much anything as long as it handles MCP and skills).
 - `git` and `python3` (3.9+, standard library only).
 - Optional: [Obsidian](https://obsidian.md) 1.9+ for browsing (the `bases/` views need
   the core Bases plugin).
@@ -156,12 +142,7 @@ push it anywhere, push to a private repository.
 
 ### 3. Ask Claude Code to walk you through it
 
-```bash
-claude            # from the repo root
-```
-
-Accept the "trust this folder" prompt (the `/brain:*` commands load only in a trusted
-folder), then ask:
+Run Claude (or whatever you are using) and ask:
 
 ```
 > What is this repository about from a high-level perspective?
@@ -170,7 +151,7 @@ folder), then ask:
 
 The agent reads `AGENTS.md` and the folder READMEs and answers for your situation.
 
-### 4. Tell the agent who you are (about 30 minutes)
+### 4. Tell the agent who you are
 
 These three files are yours; the agent reads them every session and never edits
 them. Replace every `TODO`. A section left as `TODO` is treated as "not set": the
@@ -187,11 +168,8 @@ agent will not guess, and will ask about it in the Daily Review.
 For each mid-term goal, create the page it links to, using the templates in
 `AGENTS.md`:
 
-- a **venture** for a business hypothesis: `wiki/ventures/<slug>.md` (§4.10). Write the
-  thesis and, if you want, kill criteria. The agent never edits those two sections.
-- an **initiative** for an ongoing practice: `wiki/initiatives/<slug>.md` (§4.13). If
-  you publish, fill the shipped `wiki/initiatives/writing.md` stub; the publishing
-  operations expect that slug. If you don't, delete it.
+- a **venture** for a business hypothesis: `wiki/ventures/<slug>.md`. Write the thesis and, if you want, kill criteria. The agent never edits those two sections.
+- an **initiative** for an ongoing practice: `wiki/initiatives/<slug>.md`. If you publish, fill the shipped `wiki/initiatives/writing.md` stub; the publishing operations expect that slug. If you don't, delete it.
 
 Every venture needs an `## Evidence against` section and every initiative an
 `## Evidence of drift` section. Write `Not yet examined.` under it for now: lint
@@ -203,7 +181,7 @@ new page to `index.md` (the agent keeps it current after that). Optionally copy
 `bases/_venture.base.example` to `bases/<VENTURE>.base` and add a section to
 `Dashboard.md`.
 
-### 6. Connect your inputs (optional)
+### 6. Connect your inputs
 
 Nothing here is required to start: manual notes and file drops work with no
 connector (see "First run" below). Every connector ships **disabled**. For each one
@@ -230,22 +208,11 @@ Set `defaults.start_from` to the day you start; `/brain:sync` refuses to run whi
 is `TODO`. Connectors pull nothing older unless you pass `--since`. Email is the
 exception: a thread you label `brain` is pulled whatever its date.
 
-**Using a different tool?** Swap the connector, keep the shape. A source needs only
-three things: a stable `source_id`, a capture time, and text. To replace Plaud with
-another recorder, change `mcp_server` (or use `transport: manual` and drop
-transcripts into `notes/`), then update the matching bullet in `AGENTS.md` §5.0 and
-the step in `.claude/skills/brain/skills/sync/SKILL.md`. Changes to the contract are
-yours to make; the agent may propose them but never edits `AGENTS.md` or `config/`
-on its own.
+**Using a different tool?** Swap the connector, keep the shape. A source needs only three things: a stable `source_id`, a capture time, and text. To replace Plaud with another recorder, change `mcp_server` (or use `transport: manual` and drop transcripts into `notes/`), then update the matching bullet in `AGENTS.md` and the step in `.claude/skills/brain/skills/sync/SKILL.md`. Changes to the contract are yours to make; the agent may propose them but never edits `AGENTS.md` or `config/` on its own.
 
 ### 7. First run
 
-```bash
-claude            # from the vault root; CLAUDE.md imports AGENTS.md
-```
-
-If typing `/brain:` shows no commands, the folder is not trusted yet: open `claude`
-interactively once and accept the prompt (`claude -p` never asks).
+Start Claude in the repo. If typing `/brain:` shows no commands, the folder is not trusted yet: open `claude` interactively once and accept the prompt (`claude -p` never asks).
 
 **With no connector (five minutes).** Write anything you would otherwise forget:
 meeting notes, a decision, an idea. Save it as
@@ -253,7 +220,7 @@ meeting notes, a decision, an idea. Save it as
 
 ```
 > /brain:sync notes        # adds source frontmatter; the body is never touched
-> /brain:ingest pending    # compiles it into the Daily Log, wiki and queues
+> /brain:ingest            # compiles it into the Daily Log, wiki and queues
 > /brain:review            # today's Daily Review
 ```
 
@@ -285,7 +252,7 @@ Open `journal/reviews/review-<today>.md`, answer the three decisions, and write
 
 | When | Do | Time |
 |---|---|---:|
-| Active day | `/brain:sync` → `/brain:triage` → `/brain:ingest pending` → `/brain:review`, then answer the review | ~10 min |
+| Active day | `/brain:sync` → `/brain:triage` → `/brain:ingest` → `/brain:review`, then answer the review | ~10 min |
 | When radar proposes promotions | approve with `/brain:promote <item>` (or write `PROMOTE` in the radar page's Feedback) | ~5 min |
 | Quiet day | nothing; skip the review when nothing was captured | — |
 | Before a meeting | `/brain:agenda <who, when, why>` | ~2 min |
@@ -337,8 +304,8 @@ from the vault root.
 | `index.md`, `log.md`, `sync.md` | catalog, append-only history, watermarks | agent |
 | `tools/lint.py` | deterministic checks; runs pre-commit and in CI | — |
 
-Every folder has a `README.md` saying what goes in it. `AGENTS.md` §2–§4 has the full
-map and every page template.
+Every folder has a `README.md` saying what goes in it. The "Directory map", "Frontmatter conventions" and
+"Page templates" sections of `AGENTS.md` have the full map and every page template.
 
 ## Adapting it
 
@@ -347,7 +314,7 @@ map and every page template.
   propose-then-approve loop, add a folder of workstreams with task lists, and drop
   what you don't need (firehose, seeds, analytics). Delete the matching sections from
   `AGENTS.md` so the agent doesn't look for them.
-- **No day job to mine?** Remove §5.1a from `AGENTS.md` and the `work` domain
+- **No day job to mine?** Remove the "Relevance filter for day-job sources" section from `AGENTS.md` and the `work` domain
   stays unused.
 - **Don't publish?** Leave the activity sources disabled and ignore seeds and drafts.
 - **Change a rule.** Edit `AGENTS.md`. If the rule is mechanical, add a check to
